@@ -1,2 +1,2 @@
 # JavaProject
-a Java Project that consist of creating a smart captcha (IMAC°
+a Java Project that consist of creating a smart captcha (IMAC2)
