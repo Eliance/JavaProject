@@ -2,11 +2,11 @@ package fr.upem.captcha.images.panneaux.ronds;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 
 import fr.upem.captcha.images.Capchable;
 import fr.upem.captcha.images.panneaux.Panneaux;
 
+//Même principe que pour la classe Panneaux : cf. architecture des fichiers
 public class Ronds extends Panneaux  implements Capchable{
 	
 	public Ronds() {}
@@ -23,17 +23,6 @@ public class Ronds extends Panneaux  implements Capchable{
 			}	
 		}
 		return photos;
-	}
-
-	@Override
-	public ArrayList<String> getRandomPhotosURL(int nb) {
-		ArrayList<String> randomPhotos =  new ArrayList<String>();
-		ArrayList<String> photos =  getPhotos();
-		int size = photos.size();
-		for (int i=0; i< nb; i++) {
-			randomPhotos.add(photos.get(ThreadLocalRandom.current().nextInt(size)));
-		}
-		return randomPhotos;
 	}
 
 

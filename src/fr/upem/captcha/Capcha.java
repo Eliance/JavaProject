@@ -24,14 +24,19 @@ import fr.upem.captcha.images.BasicImage;
 import fr.upem.captcha.images.Capchable;
 
 
-
+//La classe capcha permet de créer l'interface graphique du capcha
 public class Capcha {
-	
+	//La fenêtre contenant les images le texte d'instruction et le bouton
 	JFrame frame;
+	//liste des images selectinnées (on stoque le chemin relatif à partir du package fr.upem.captcha, sous forme de String)
 	private static ArrayList<String> selectedImages = new ArrayList<String>();
 	
+	//Le constructeur de capcha, il prend en compte la catégorie d'images (cette catégorie inclue le niveau de difficulté)
 	Capcha(Capchable category) {
+		
 		System.out.println(Main.nbImageMin+" image à trouver minimum dans la catégorie "+category.toString());
+		
+		//Initialisation de la fenêtre
 		frame = new JFrame("Captcha");
 		
 		GridLayout layout = new GridLayout(4,3);  // Création d'un layout de type Grille avec 4 lignes et 3 colonnes
@@ -41,47 +46,62 @@ public class Capcha {
 		frame.setResizable(false);  // On définit la fenêtre comme non redimentionnable
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Lorsque l'on ferme la fenêtre on quitte le programme.
 		
+		//Pour utiliser des images il faut instancier la classe de leur catégorie, ici les images "basiques" : celles qui ne doivent pas être selectionnées
 		BasicImage images = new BasicImage();
 		
+		//génération aléatoire du nombre d'images à trouver : entre 1 et 4 sachant que 1 est la variable statique nbImageMin, qui augmante si on se trompe dans la résolution du capcha
 		int nbSpecificImages = ThreadLocalRandom.current().nextInt(Main.nbImageMin, 5);
 		
+		//On crée les listes d'images à trouver : specificImages
 		ArrayList<String> specificImages = category.getRandomPhotosURL(nbSpecificImages);
+		//Et les autres : bacisImages pour arriver à un total de 9 images.
 		ArrayList<String> basicImages = images.getRandomPhotosURL(9-nbSpecificImages);
 		
-		//ici on remplit les 9 premieres cases de notre fenêtre par des photos
+		//ici on remplit les 9 premieres cases de notre fenêtre par les photos contenues dans les listes ci-dessus
+		//de manière aléatoire
 		try {
 			fillFrameRandomly(frame, specificImages, basicImages);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			//En pratique, la méthode fillFrameRandomly ne renverra pas d'exception car des tests vérifient qu'on ne dépasse pas la taille des listes d'images utilisées pour remplir la fenêtre
 			e.printStackTrace();
 		}
 		
-		//puis texte d'instruction
-		frame.add(new JTextArea("Veuillez selectionner les images \nmontrant des " + Main.currentCategory.toString() + "\npuis cliquez sur OK."));
+		//texte d'instruction
+		//la catégorie d'image est affichée dynamiquement grace à la méthode toString(), redéfinie pour les différentes catégories d'images
+		frame.add(new JTextArea("Veuillez selectionner les images \nmontrant des " + Main.currentCategory.toString() + "\npuis cliquez sur le bouton ci-contre."));
 
-		//puis bouton OK
+		//bouton OK : on crée d'abord l'action qu'il contient puis on crée le bouton et on l'ajoute à la fenêtre 
 		CheckAction check = new CheckAction(frame, specificImages, selectedImages);
 		JButton okButton = new JButton(check);
 		frame.add(okButton);
 		
+		//Une fois le capcha construit, on l'affiche.
 		frame.setVisible(true);
 	}
 	
+	//Méthode permettant de générer un capcha plus difficile que le précédent.
+	//l'était du précédent capcha étant indiqué par les variables statiques contenues dans le Main : nbImageMin & difficulty
 	static void harderCapcha() {
+		//1 chance sur 2 : augmanter le nombre d'image à trouver ou augmanter la difficulté
 		switch(ThreadLocalRandom.current().nextInt(2)) {
 			case 0:
+				//On incrémente la variable statique nbImageMin
 				if (Main.nbImageMin<4) {
 					Main.nbImageMin++;
 				}
+				//puis on lance (on crée) un nouveau capcha
 				Capcha capcha0 = new Capcha(Main.currentCategory);
 				break;
 			
 			case 1:
+				//on incrémente le niveau de difficulté
 				if (Main.difficulty < Main.categoriesByDifficulty.size()-1) {
 					Main.difficulty++;
 				}
+				//puis on selectionne une catégorie de manière aléatoire parmis la liste de catégories de difficulté associée au niveau de difficulté
 				ArrayList<Capchable> categories = Main.categoriesByDifficulty.get(Main.difficulty);
 				Main.currentCategory = categories.get(ThreadLocalRandom.current().nextInt(categories.size()));
+				//On créeun nouveau captcha avec la nouvelle catégorie
 				Capcha capcha1 = new Capcha(Main.currentCategory);
 				break;
 				
@@ -90,6 +110,7 @@ public class Capcha {
 		}
 	}
 	
+	//Cette méthode permet de remplir la fenêtre avec les 9 images, en répartissant les images à trouver et les autres de manière aléatoire.
 	static void fillFrameRandomly(JFrame frame, ArrayList<String> specificImages, ArrayList<String> basicImages) throws IOException{
 		int nbSpecificImg = specificImages.size();
 		int specificCount = 0;
@@ -122,6 +143,7 @@ public class Capcha {
 		}
 	}
 	
+	//Cette méthode permet de créer un objet (image) clickable, quand on click, l'image est selectionée / deselectionnée, alors son chemin relatif est stockée dans la liste selectedImages
 	static JLabel createLabelImage(String imageLocation) throws IOException{
 		File f = new File(imageLocation);
 		
